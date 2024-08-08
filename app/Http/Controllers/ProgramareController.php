@@ -10,6 +10,7 @@ use App\Models\Specializare;
 use App\Models\Programare;
 use App\Models\Cabinet;
 use App\Models\Orar;
+use App\Models\ZiLibera;
 use App\Models\Pacient;
 
 class ProgramareController extends Controller
@@ -28,8 +29,8 @@ class ProgramareController extends Controller
         // $searchPacient = $request->searchPacient ?? null;
         // $searchData = $request->searchData ?? null;
         // $searchDataToataSaptamana = $request->searchDataToataSaptamana ?? null;
-$request->specializare_id ?? $request->specializare_id = 6;
-$request->medic_id ?? (($request->specializare_id == 6) ? ($request->medic_id = 4) : '') ;
+// $request->specializare_id ?? $request->specializare_id = 6;
+// $request->medic_id ?? (($request->specializare_id == 6) ? ($request->medic_id = 4) : '') ;
 
         $programariQuery = Programare::
             when($request->specializare_id, function ($query, $specializare_id) {
@@ -62,13 +63,43 @@ $request->medic_id ?? (($request->specializare_id == 6) ? ($request->medic_id = 
                 }
             }
 
+            $zileDeLucru = [];
             if ($request->specializare_id && $request->medic_id){ // just if those 2 fields are completed
+
+                $dataDeCautat = Carbon::parse($request->data);
+                // $orare = Orar::where('medic_id', $request->medic_id)->get()->pluck('zi_din_saptamana')->toArray();
+                $orare = Orar::where('medic_id', $request->medic_id)->get();
+                $zileLibere = ZiLibera::where('medic_id', $request->medic_id)->get()->pluck('data')->toArray();
+                // dd($zileLibere, $orare, $dataDeCautat->day);
+                while ((count($zileDeLucru) < 5) && (Carbon::now()->diffInDays($dataDeCautat) < 1000)) {
+                    if (
+                        // „dataDeCautat” to not be in a free day
+                        !in_array($dataDeCautat->isoFormat('YYYY-MM-DD'), $zileLibere)
+                        // „dataDeCautat” to be in a day in wich that medic is working
+                        && in_array($dataDeCautat->dayOfWeekIso, $orare->pluck('zi_din_saptamana')->toArray())
+                        ) {
+
+                        // We get the $orar for $dataDeCautat
+                        $orar = $orare->where('zi_din_saptamana', $dataDeCautat->dayOfWeekIso);
+
+                        $zideLucruNoua = [];
+                        $zideLucruNoua['data'] = $dataDeCautat->isoFormat('YYYY-MM-DD');
+                        $zideLucruNoua['de_la'] = $orar->first()->de_la;
+                        $zideLucruNoua['pana_la'] = $orar->first()->pana_la;
+
+                        array_push($zileDeLucru, $zideLucruNoua);
+                    }
+                    $dataDeCautat = Carbon::parse($dataDeCautat)->addDay();
+                }
+
                 $programari = $programariQuery
-                    ->when($request->data, function ($query, $data) {
-                        $dataDeCautat = Carbon::parse($data);
+                    ->when($request->data, function ($query) use ($zileDeLucru) {
+                        // $dataDeCautat = Carbon::parse($data);
+                        // dd($zileDeLucru);
                         return $query
-                            ->whereDate('data', '>=', $dataDeCautat->startOfWeek())
-                            ->whereDate('data', '<=', $dataDeCautat->endOfWeek())
+                            // ->whereDate('data', '>=', $dataDeCautat->startOfWeek())
+                            // ->whereDate('data', '<=', $dataDeCautat->endOfWeek())
+                            ->whereIn('data', array_column($zileDeLucru, 'data'))
                             ->orderBy('de_la');
                     })
                     ->get();
@@ -77,10 +108,11 @@ $request->medic_id ?? (($request->specializare_id == 6) ? ($request->medic_id = 
             }
         }
 
+        // dd($programari);
         $specializariSiMedici = Specializare::with('medici:id,specializare_id,nume')->select('id', 'denumire')->get();
         $pacienti = Pacient::with('localitate')->select('id', 'nume', 'prenume')->get();
 
-        return view('programari.index', compact('request', 'programari', 'tipAfisare', 'specializariSiMedici', 'pacienti'));
+        return view('programari.index', compact('request', 'programari', 'tipAfisare', 'specializariSiMedici', 'pacienti', 'zileDeLucru'));
     }
 
     /**
@@ -93,6 +125,10 @@ $request->medic_id ?? (($request->specializare_id == 6) ? ($request->medic_id = 
         $request->session()->get('programareReturnUrl') ?? $request->session()->put('programareReturnUrl', url()->previous());
 
         $programare = new Programare;
+        $programare->specializare_id = $request->specializare_id;
+        $programare->medic_id = $request->medic_id;
+        $programare->data = $request->data;
+        $programare->de_la = $request->de_la;
 
         // If it was added a „pacient” from "programare", it will came back in "programare" and it will fill out back the form
         $programare->fill($request->session()->pull('programareRequest', []));

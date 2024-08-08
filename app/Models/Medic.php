@@ -28,4 +28,24 @@ class Medic extends Model
     {
         return $this->belongsTo(Specializare::class, 'specializare_id');
     }
+
+    /**
+     * Get all of the orare for the Medic
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function orare(): HasMany
+    {
+        return $this->hasMany(Orar::class, 'medic_id');
+    }
+
+    /**
+     * Get all of the zileLibere for the Medic
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function zileLibere(): HasMany
+    {
+        return $this->hasMany(ZiLibera::class, 'medic_id');
+    }
 }

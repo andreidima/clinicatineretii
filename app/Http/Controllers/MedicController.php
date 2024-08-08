@@ -18,11 +18,13 @@ class MedicController extends Controller
     public function index(Request $request)
     {
         $request->session()->forget('medicReturnUrl');
+        $request->session()->forget('orarReturnUrl');
+        $request->session()->forget('ziLiberaReturnUrl');
 
         $searchNume = $request->searchNume;
 
-        $medici = Medic::
-            when($searchNume, function ($query, $searchNume) {
+        $medici = Medic::with('orare')
+            ->when($searchNume, function ($query, $searchNume) {
                 return $query->where('nume', 'like', '%' . $searchNume . '%');
             })
             ->latest()
@@ -137,6 +139,39 @@ class MedicController extends Controller
                 'nume' => 'required|max:255',
                 'telefon' => 'nullable|max:255',
                 'email' => 'nullable|max:255',
+                // 'zile_lucratoare_ale_saptamanii' => ['nullable' , 'max:255',
+                //     function ($attribute, $value, $fail) use ($request) {
+                //         if ($value){
+                //             $zileLucratoareAleSaptamanii = preg_split ("/\,/", $value);
+                //             foreach ($zileLucratoareAleSaptamanii as $ziLucratoare){
+                //                 if (!(intval($ziLucratoare) == $ziLucratoare)){
+                //                     $fail('Câmpul „Zile lucrătoare ale săptămânii” nu este completat corect');
+                //                 }elseif (($ziLucratoare < 1) || ($ziLucratoare > 7)){
+                //                     $fail('Câmpul „Zile lucrătoare ale săptămânii” poate conține valori între 1 și 7.');
+                //                 }
+                //             }
+                //         }
+                //     }],
+                // 'zile_indisponibile' => ['nullable' , 'max:200',
+                //     function ($attribute, $value, $fail) use ($request) {
+                //         if ($value){
+                //             $zileIndisponibile = preg_split ("/\,/", $value);
+                //             foreach ($zileIndisponibile as $ziIndisponibila){
+                //                 // if (($carbonDate = Carbon::parse($ziIndisponibila))
+                //                 //     && ($carbonDate->isoFormat('DD.MM.YYYY') === $ziIndisponibila)) {
+                //                 //         $fail('Câmpul „Zile indisponibile” nu este completat corect');
+                //                 // }
+                //                 try {
+                //                     // Attempt to parse the date using Carbon
+                //                     $carbonDate = Carbon::parse($ziIndisponibila);
+                //                     // return true; // If parsing is successful, the date is valid
+                //                 } catch (\Exception $e) {
+                //                     // return false; // If an exception is caught, the date is invalid
+                //                     $fail('Câmpul „Zile indisponibile” nu este completat corect');
+                //                 }
+                //             }
+                //         }
+                //     }],
                 'descriere' => 'nullable|max:2000',
                 'observatii' => 'nullable|max:2000',
             ],

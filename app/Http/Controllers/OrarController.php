@@ -45,11 +45,13 @@ class OrarController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(Request $request)
+    public function create(Request $request, $specializareId = null, $medicId = null)
     {
         $request->session()->get('orarReturnUrl') ?? $request->session()->put('orarReturnUrl', url()->previous());
 
         $orar = new Orar;
+        $orar->specializare_id = $specializareId;
+        $orar->medic_id = $medicId;
         $specializari = Specializare::select('id', 'denumire')->get();
         $medici = Medic::select('id', 'nume')->get();
 
@@ -145,7 +147,7 @@ class OrarController extends Controller
             [
                 'specializare_id' => 'required',
                 'medic_id' => '',
-                'data' => '',
+                'zi_din_saptamana' => '',
                 'de_la' => '',
                 'pana_la' => '',
             ],

@@ -258,7 +258,7 @@
                     </ul>
                 </nav>
 
-        @elseif ($tipAfisare == "saptamanal")
+        {{-- @elseif ($tipAfisare == "saptamanal")
             @if ($request->specializare_id && $request->medic_id)
                 <div class="table-responsive rounded mb-4"  style="max-height: 90vh">
                     <table class="table table-striped table-hover table-sm rounded table-bordered">
@@ -329,7 +329,6 @@
                                                     <div class="col-12 py-0 px-1 d-flex justify-content-end">
                                                         <div>
                                                             <a href="{{ $programare->path() }}" class="flex me-1">
-                                                                {{-- <span class="badge bg-success">Vizualizează</span></a> --}}
                                                                 <span class="badge text-success p-0"><i class="fa-solid fa-eye"></i></span></a>
                                                         </div>
                                                         <a href="{{ $programare->path() }}/modifica"
@@ -354,6 +353,104 @@
                                     @endfor
                                 </tr>
                             @endfor
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class=""  style="">
+                    <p>
+                        Pentru a încărca date, caută o specializare, un medic, și o zi din săptămâna dorită.
+                    </p>
+                </div>
+            @endif
+        @endif --}}
+        @elseif ($tipAfisare == "saptamanal")
+            @if ($request->specializare_id && $request->medic_id && count($zileDeLucru))
+                <div class="table-responsive rounded mb-4"  style="max-height: 90vh">
+                    <table class="table table-striped table-hover table-sm rounded table-bordered">
+                        <thead class="rounded" style="position: sticky; top: 0px;">
+                            <tr>
+                                @foreach ($zileDeLucru as $zi)
+                                    <th class="culoare2 text-white text-center" style="max-width:220px;">
+                                        {{ ucfirst(Carbon::parse($zi['data'])->dayName) }} {{ Carbon::parse($zi['data'])->isoFormat('DD.MM') }}
+                                        <br>
+                                        {{ Carbon::parse($zi['de_la'])->isoFormat('HH:mm') }} - {{ Carbon::parse($zi['pana_la'])->isoFormat('HH:mm') }}
+                                    </th>
+                                @endforeach
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                @foreach ($zileDeLucru as $zi)
+                                    <td class="p-0" style="border:1px black solid">
+                                        @php
+                                            $programariZiuaCurenta = $programari->where('data', $zi['data']);
+                                        @endphp
+                                        @foreach($programariZiuaCurenta as $programare)
+                                            <div class="row p-0 m-0" style="border:1px black solid">
+                                                <div class="col-12 py-0 px-1 d-flex">
+                                                    <div class="me-1">
+                                                        <small class="px-1 text-white rounded-3 culoare1">
+                                                            {{ $programare->de_la ? Carbon::parse($programare->de_la)->isoFormat('HH:mm') : '' }}-{{ $programare->pana_la ? Carbon::parse($programare->pana_la)->isoFormat('HH:mm') : '' }}
+                                                        </small>
+                                                        <br>
+                                                    </div>
+                                                    <div style="font-size:90%; line-height:1.2;">
+                                                        {{ $programare->pacient->nume ?? '' }} {{ $programare->pacient->prenume ?? '' }}
+                                                        @if ($programare->pacient->telefon ?? null)
+                                                            <br>
+                                                            {{ $programare->pacient->telefon ?? ''}}
+                                                        @endif
+                                                        @if ($programare->cabinet)
+                                                            <br>
+                                                            {{ $programare->cabinet->nume ?? ''}}
+                                                        @endif
+                                                        @if ($programare->notita)
+                                                            <br>
+                                                            {{ $programare->notita ?? ''}}
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 py-0 px-1 d-flex justify-content-end">
+                                                    <div>
+                                                        <a href="{{ $programare->path() }}" class="flex me-1">
+                                                            <span class="badge text-success p-0"><i class="fa-solid fa-eye"></i></span></a>
+                                                    </div>
+                                                    <a href="{{ $programare->path() }}/modifica"
+                                                        class="flex me-1"
+                                                    >
+                                                        <span class="badge text-primary p-0"><i class="fa-solid fa-pen-to-square"></i></span>
+                                                    </a>
+                                                    <div style="flex" class="">
+                                                        <a
+                                                            href="#"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#stergeProgramare{{ $programare->id }}"
+                                                            title="Șterge Programare"
+                                                            >
+                                                            <span class="badge text-danger p-0"><i class="fa-solid fa-trash-can"></i></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                </div>
+                                        @endforeach
+                                            <div class="row p-0 m-0">
+                                                <div class="col-12 text-center">
+                                                    <form class="needs-validation m-2" novalidate method="GET" action="/programari/adauga">
+                                                        <input type="hidden" name="specializare_id" value="{{ $request->specializare_id ?? ''}}">
+                                                        <input type="hidden" name="medic_id" value="{{ $request->medic_id ?? ''}}">
+                                                        <input type="hidden" name="data" value="{{ $zi['data'] }}">
+                                                        <input type="hidden" name="de_la" value="{{ $programariZiuaCurenta->last()->pana_la ?? $zi['de_la'] }}">
+
+                                                        <button class="btn btn-sm btn-success text-white py-0 border border-dark rounded-3" type="submit">
+                                                            <i class="fas fa-plus-square text-white me-1"></i>Adaugă
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                    </td>
+                                @endforeach
+                            </tr>
                         </tbody>
                     </table>
                 </div>

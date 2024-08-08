@@ -47,8 +47,8 @@
                     <tr class="" style="padding:2rem">
                         <th class="culoare2 text-white">#</th>
                         <th class="culoare2 text-white">Nume</th>
-                        <th class="culoare2 text-white">Telefon</th>
-                        <th class="culoare2 text-white">Email</th>
+                        <th class="culoare2 text-white">Orar</th>
+                        <th class="culoare2 text-white">Zile Libere</th>
                         <th class="culoare2 text-white text-end">Acțiuni</th>
                     </tr>
                 </thead>
@@ -62,10 +62,32 @@
                                 {{ $medic->nume }}
                             </td>
                             <td class="">
-                                {{ $medic->telefon }}
+                                @foreach ($medic->orare->sortBy('zi_din_saptamana') as $orar)
+                                    {{ Carbon::now()->dayOfWeek($orar->zi_din_saptamana)->dayName }} = {{ Carbon::parse($orar->de_la)->isoFormat('HH:mm') }} - {{ Carbon::parse($orar->pana_la)->isoFormat('HH:mm') }}
+                                    <a href="{{ $orar->path() }}/modifica">
+                                        <span class="badge text-primary px-1 py-0" title="Modifică"><i class="fa-solid fa-pen-to-square"></i></span></a>
+                                    <a href="#" title="Șterge orar"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#stergeOrar{{ $orar->id }}">
+                                        <span class="badge text-danger px-1 py-0" title="Șterge"><i class="fa-solid fa-trash-can"></i></span></a>
+                                    <br>
+                                @endforeach
+                                <a href="/specializare/{{ $medic->specializare_id }}/medic/{{ $medic->id }}/orare/adauga" class="flex me-1">
+                                    <span class="badge text-success" title="Adaugă"><i class="fas fa-plus-square"></i></span></a>
                             </td>
                             <td class="">
-                                {{ $medic->email }}
+                                @foreach ($medic->zileLibere->sortBy('data') as $ziLibera)
+                                    {{ Carbon::parse($ziLibera->data)->isoFormat('DD.MM.YYYY') }}
+                                    <a href="{{ $ziLibera->path() }}/modifica">
+                                        <span class="badge text-primary px-1 py-0" title="Modifică"><i class="fa-solid fa-pen-to-square"></i></span></a>
+                                    <a href="#" title="Șterge zi liberă"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#stergeZiLibera{{ $ziLibera->id }}">
+                                        <span class="badge text-danger px-1 py-0" title="Șterge"><i class="fa-solid fa-trash-can"></i></span></a>
+                                    <br>
+                                @endforeach
+                                <a href="/medici-zile-libere/medic/{{ $medic->id }}/zile-libere/adauga" class="flex me-1">
+                                    <span class="badge text-success" title="Adaugă"><i class="fas fa-plus-square"></i></span></a>
                             </td>
                             <td class="">
                                 <div class="text-end">
@@ -95,6 +117,74 @@
             </nav>
     </div>
 </div>
+
+{{-- Modal to delete orare --}}
+@foreach ($medici as $medic)
+    @foreach ($medic->orare as $orar)
+        <div class="modal fade text-dark" id="stergeOrar{{ $orar->id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white" id="exampleModalLabel">Orar: <b>{{ $orar->specializare->denumire ?? '' }} / {{ $orar->medic->nume ?? '' }}</b></h5>
+                    <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="text-align:left;">
+                    Ești sigur ca vrei să ștergi orarul?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Renunță</button>
+
+                    <form method="POST" action="{{ $orar->path() }}">
+                        @method('DELETE')
+                        @csrf
+                        <button
+                            type="submit"
+                            class="btn btn-danger text-white"
+                            >
+                            Șterge orarul
+                        </button>
+                    </form>
+
+                </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+@endforeach
+
+{{-- Modal to delete zileLibere --}}
+@foreach ($medici as $medic)
+    @foreach ($medic->zileLibere as $ziLibera)
+        <div class="modal fade text-dark" id="stergeZiLibera{{ $ziLibera->id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white" id="exampleModalLabel">Zi liberă: <b>{{ $ziLibera->medic->nume ?? '' }} - {{ Carbon::parse($ziLibera->data)->isoFormat('DD.MM.YYYY') }} </b></h5>
+                    <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="text-align:left;">
+                    Ești sigur ca vrei să ștergi ziua liberă?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Renunță</button>
+
+                    <form method="POST" action="{{ $ziLibera->path() }}">
+                        @method('DELETE')
+                        @csrf
+                        <button
+                            type="submit"
+                            class="btn btn-danger text-white"
+                            >
+                            Șterge Ziua Liberă
+                        </button>
+                    </form>
+
+                </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+@endforeach
 
 {{-- Modal to delete medics --}}
 @foreach ($medici as $medic)

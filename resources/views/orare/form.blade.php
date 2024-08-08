@@ -21,19 +21,19 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-lg-2 mb-4">
-                <label for="data" class="mb-0 ps-3"><small>Data</small></label>
-                <vue-datepicker-next
-                    data-veche="{{ old('data', $orar->data) }}"
-                    nume-camp-db="data"
-                    tip="date"
-                    value-type="YYYY-MM-DD"
-                    format="DD.MM.YYYY"
-                    :latime="{ width: '125px' }"
-                ></vue-datepicker-next>
+            <div class="col-lg-4 mb-4">
+                <label for="zi_din_saptamana" class="mb-0 ps-3">Zi din săptămână<span class="text-danger">*</span></label>
+                <select class="form-select bg-white rounded-3 {{ $errors->has('zi_din_saptamana') ? 'is-invalid' : '' }}" name="zi_din_saptamana">
+                    <option selected></option>
+                    <option value="1" {{ old('zi_din_saptamana', $orar->zi_din_saptamana) == "1" ? 'selected' : '' }}>Luni</option>
+                    <option value="2" {{ old('zi_din_saptamana', $orar->zi_din_saptamana) == "2" ? 'selected' : '' }}>Marți</option>
+                    <option value="3" {{ old('zi_din_saptamana', $orar->zi_din_saptamana) == "3" ? 'selected' : '' }}>Miercuri</option>
+                    <option value="4" {{ old('zi_din_saptamana', $orar->zi_din_saptamana) == "4" ? 'selected' : '' }}>Joi</option>
+                    <option value="5" {{ old('zi_din_saptamana', $orar->zi_din_saptamana) == "5" ? 'selected' : '' }}>Vineri</option>
+                </select>
             </div>
-            <div class="col-lg-2 mb-4">
-                <label for="de_la" class="mb-0 ps-3"><small>De la</small></label>
+            <div class="col-lg-2 mb-4 text-center">
+                <label for="de_la" class="mb-0 ps-0"><small>De la</small></label>
                 <vue-datepicker-next
                     data-veche="{{ old('de_la', $orar->de_la) }}"
                     nume-camp-db="de_la"
