@@ -31,6 +31,7 @@ class ProgramareController extends Controller
         // $searchDataToataSaptamana = $request->searchDataToataSaptamana ?? null;
 // $request->specializare_id ?? $request->specializare_id = 6;
 // $request->medic_id ?? (($request->specializare_id == 6) ? ($request->medic_id = 4) : '') ;
+        $zileDeLucru = [];
 
         $programariQuery = Programare::
             when($request->specializare_id, function ($query, $specializare_id) {
@@ -63,7 +64,6 @@ class ProgramareController extends Controller
                 }
             }
 
-            $zileDeLucru = [];
             if ($request->specializare_id && $request->medic_id){ // just if those 2 fields are completed
 
                 $dataDeCautat = Carbon::parse($request->data);
