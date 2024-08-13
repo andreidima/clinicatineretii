@@ -191,9 +191,10 @@ const programareForm = createApp({
             pacienti: (typeof pacienti !== 'undefined') ? pacienti : '',
             pacientiListaAutocomplete: [],
 
-            // dataProgramare: '',
+            serviciiAdaugateLaProgramare: [],
 
-            // orare: [],
+            de_la: (typeof de_la !== 'undefined') ? de_la : '',
+            pana_la: (typeof pana_la !== 'undefined') ? pana_la : '',
         }
     },
     watch: {
@@ -204,6 +205,29 @@ const programareForm = createApp({
                 this.createMediciList();
             }
         },
+        'serviciiAdaugateLaProgramare.length': function (newLength, oldLength) {
+            const times = [];
+
+            // The time starts from the programation de_la
+            times.push(this.de_la);
+
+            // Are added all durations for each serviciu
+            for (var i = 0; i < this.serviciiAdaugateLaProgramare.length; i++) {
+                times.push(this.serviciiAdaugateLaProgramare[i].durata);
+            }
+
+            // „times” array is sent to the function „sumTimes” to calculate the final time
+            const totalTime = this.sumTimes(times);
+
+            this.pana_la = totalTime;
+        }
+
+        // serviciiAdaugateLaProgramare: {
+        //     handler: function () {
+        //         this.calculeazaTimpTotalServiciiAdaugate();
+        //         console.log('a');
+        //     }
+        // },
         // medic_id: {
         //     handler: function (newVal, oldVal) {
         //         this.createOrareList();
@@ -329,6 +353,25 @@ const programareForm = createApp({
                     }
                 }
             }
+        },
+        sumTimes(timeArray) {
+            let totalMinutes = 0;
+
+            // Step 1: Convert each time to minutes and sum them up
+            timeArray.forEach(time => {
+                const [hours, minutes] = time.split(':').map(Number);
+                totalMinutes += hours * 60 + minutes;
+            });
+
+            // Step 2: Convert the total minutes back to hours and minutes
+            const totalHours = Math.floor(totalMinutes / 60);
+            const remainingMinutes = totalMinutes % 60;
+
+            // Step 3: Format the result as "HH:MM"
+            const formattedHours = String(totalHours).padStart(2, '0');
+            const formattedMinutes = String(remainingMinutes).padStart(2, '0');
+
+            return `${formattedHours}:${formattedMinutes}`;
         },
     },
 });

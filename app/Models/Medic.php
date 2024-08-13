@@ -48,4 +48,14 @@ class Medic extends Model
     {
         return $this->hasMany(ZiLibera::class, 'medic_id');
     }
+
+    /**
+     * Get all of the servicii for the Medic
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function servicii(): HasMany
+    {
+        return $this->hasMany(Serviciu::class, 'medic_id');
+    }
 }

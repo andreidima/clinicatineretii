@@ -133,7 +133,7 @@ class ProgramareController extends Controller
         // If it was added a „pacient” from "programare", it will came back in "programare" and it will fill out back the form
         $programare->fill($request->session()->pull('programareRequest', []));
 
-        $specializariSiMedici = Specializare::with('medici:id,specializare_id,nume')->select('id', 'denumire')->get();
+        $specializariSiMedici = Specializare::with('medici:id,specializare_id,nume', 'medici.servicii:id,medic_id,nume,durata,pret')->select('id', 'denumire')->get();
         $cabinete = Cabinet::select('id', 'nume')->get();
         $pacienti = Pacient::with('localitate')->select('id', 'nume', 'prenume', 'telefon', 'localitate_id')->get();
 

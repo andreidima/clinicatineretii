@@ -10,6 +10,9 @@
 
     pacienti = {!! json_encode($pacienti) !!}
     pacientIdVechi = {!! json_encode(old('pacient_id', ($programare->pacient_id ?? "")) ?? "") !!}
+
+    de_la = {!! json_encode(old('de_la', ($programare->de_la ?? "")) ?? "") !!}
+    pana_la = {!! json_encode(old('pana_la', ($programare->pana_la ?? "")) ?? "") !!}
 </script>
 
 <div class="row mb-0 px-3 d-flex border-radius: 0px 0px 40px 40px" id="programareForm">
@@ -146,6 +149,40 @@
             </div>
         </div>
         <div class="row mb-4 pt-2 rounded-3 justify-content-center" style="border:1px solid #e9ecef; border-left:0.25rem #e66800 solid; background-color:#fff9f5">
+            <div class="col-lg-6">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <label class="mb-0 ps-3">Servicii disponibile:</label>
+                    </div>
+                    <div v-if="medic_id" class="col-lg-12">
+                        <div v-for="serviciu in medici[0].servicii" class="d-flex align-items-center">
+                            <span class="me-1">
+                                @{{ serviciu.nume }} / Durata: @{{ serviciu.durata.substr(0, 5) }} / Preț: @{{ serviciu.pret }} lei
+                            </span>
+                            {{-- <button type="button" class="btn btn-sm p-0 btn-success" @click="adaugaServiciuLaProgramare(serviciu.id)">Adaugă</button> --}}
+                            <button type="button" class="btn btn-sm py-0 btn-success" @click="serviciiAdaugateLaProgramare.push(serviciu)">Adaugă</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <label class="mb-0 ps-3">Servicii adăugate la programare:</label>
+                    </div>
+                    <div v-if="medic_id" class="col-lg-12">
+                        <div v-for="(serviciu, index) in serviciiAdaugateLaProgramare" class="rounded-1 px-1 mb-1 d-flex align-items-center" style="background-color:rgb(154, 255, 203); width: fit-content;">
+                            <span class="me-1">
+                                @{{ serviciu.nume }} / Durata: @{{ serviciu.durata.substr(0, 5) }} / Preț: @{{ serviciu.pret }} lei
+                            </span>
+                            {{-- <button type="button" class="btn btn-sm p-0 btn-danger" @click="stergeServiciuDeLaProgramare(serviciu.id)">Șterge</button> --}}
+                            <button type="button" class="btn btn-sm py-0 btn-danger" @click="serviciiAdaugateLaProgramare.splice(index,1)">Șterge</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4 pt-2 rounded-3 justify-content-center" style="border:1px solid #e9ecef; border-left:0.25rem darkcyan solid; background-color:rgb(241, 250, 250)">
             <div class="col-lg-2 mb-4">
                 <label for="data" class="mb-0 ps-3">Data</label>
                 <vue-datepicker-next
@@ -173,8 +210,8 @@
                     </option>
                 </select>
             </div> --}}
-            <div class="col-lg-2 mb-4">
-                <label for="de_la" class="mb-0 ps-3">De la</label>
+            <div class="col-lg-2 mb-4 text-center">
+                <label for="de_la" class="mb-0 ps-0">De la</label>
                 <vue-datepicker-next
                     data-veche="{{ old('de_la', $programare->de_la) }}"
                     nume-camp-db="de_la"
@@ -182,21 +219,28 @@
                     value-type="HH:mm"
                     format="HH:mm"
                     :latime="{ width: '80px' }"
+                    v-model="de_la"
                 ></vue-datepicker-next>
             </div>
-            <div class="col-lg-2 mb-4">
-                <label for="pana_la" class="mb-0 ps-3">Până la</label>
-                <vue-datepicker-next
+            <div class="col-lg-2 mb-4 text-center justify-content-center" style="text-align: center">
+                <label for="pana_la" class="mb-0 ps-0">Până la</label>
+                {{-- <vue-datepicker-next
                     data-veche="{{ old('pana_la', $programare->pana_la) }}"
                     nume-camp-db="pana_la"
                     tip="time"
                     value-type="HH:mm"
                     format="HH:mm"
                     :latime="{ width: '80px' }"
-                ></vue-datepicker-next>
+                ></vue-datepicker-next> --}}
+                <input type="text"
+                    class="form-control bg-white rounded-3 mx-auto {{ $errors->has('pacient_nume') ? 'is-invalid' : '' }}"
+                    style="width: 65px"
+                    name="pana_la"
+                    v-model="pana_la"
+                    >
             </div>
         </div>
-        <div class="row mb-4 pt-2 rounded-3" style="border:1px solid #e9ecef; border-left:0.25rem darkcyan solid; background-color:rgb(241, 250, 250)">
+        <div class="row mb-4 pt-2 rounded-3" style="border:1px solid #e9ecef; border-left:0.25rem #e66800 solid; background-color:#fff9f5">
             <div class="col-lg-4 mb-4" style="position:relative;" v-click-out="() => pacientiListaAutocomplete = ''">
                 <label for="pacient_id" class="mb-0 ps-3">Pacient<span class="text-danger">*</span></label>
                 <input
@@ -269,7 +313,7 @@
                     disabled>
             </div>
         </div>
-        <div class="row mb-4 pt-2 rounded-3 justify-content-center" style="border:1px solid #e9ecef; border-left:0.25rem #e66800 solid; background-color:#fff9f5">
+        <div class="row mb-4 pt-2 rounded-3 justify-content-center" style="border:1px solid #e9ecef; border-left:0.25rem darkcyan solid; background-color:rgb(241, 250, 250)">
             <div class="col-lg-6 mb-4">
                 <label for="notita" class="mb-0 ps-3">Notiță</label>
                 <input
